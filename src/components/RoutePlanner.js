@@ -15,7 +15,6 @@ export default function RoutePlanner() {
   const [mode, setMode] = useState("car");
   const [recommendedPois, setRecommendedPois] = useState([]);
 
-  // ---------- Load user and POIs ----------
   useEffect(() => {
     const storedUser = JSON.parse(localStorage.getItem("user"));
     setUser(storedUser);
@@ -39,7 +38,6 @@ export default function RoutePlanner() {
     } else setUserLocation({ lat: 14.1461, lng: 121.5012 });
   }, []);
 
-  // ---------- Fetch ML recommended POIs ----------
   useEffect(() => {
     if (!user) return;
 
@@ -55,14 +53,12 @@ export default function RoutePlanner() {
       );
   }, [user]);
 
-  // ---------- Toggle category selection ----------
   const toggleCategory = (tag) => {
     setSelectedCategories((prev) =>
       prev.includes(tag) ? prev.filter((c) => c !== tag) : [...prev, tag]
     );
   };
 
-  // ---------- Plan Route ----------
   const planRoute = () => {
     if (!userLocation) return alert("Waiting for location...");
 
@@ -93,7 +89,6 @@ export default function RoutePlanner() {
     setShowPopup(false);
   };
 
-  // ---------- Filter recommended POIs based on selected categories ----------
   const filteredRecommended = selectedCategories.length
     ? recommendedPois.filter((poi) =>
         selectedCategories.some((cat) =>
@@ -104,7 +99,6 @@ export default function RoutePlanner() {
 
   return (
     <div style={{ textAlign: "center", marginTop: 40 }}>
-      {/* ---------- Homepage "Places You Might Like" Grid ---------- */}
       {recommendedPois.length > 0 && (
         <div style={{ marginBottom: 40, padding: "0 20px" }}>
           <h2 style={{ color: "#1976d2", marginBottom: 16 }}>
@@ -136,8 +130,6 @@ export default function RoutePlanner() {
           </div>
         </div>
       )}
-
-      {/* ---------- Plan My Route Button ---------- */}
       <button
         onClick={() => setShowPopup(true)}
         style={{
@@ -153,8 +145,6 @@ export default function RoutePlanner() {
       >
         Plan My Route
       </button>
-
-      {/* ---------- Category & Transport Mode Popup ---------- */}
       {showPopup && (
         <div
           style={{
@@ -185,8 +175,6 @@ export default function RoutePlanner() {
             <h2 style={{ marginBottom: 16, color: "#1976d2" }}>
               Select POI Categories
             </h2>
-
-            {/* ---------- Organized Tags by Category ---------- */}
             <div
               style={{
                 textAlign: "left",
@@ -215,8 +203,6 @@ export default function RoutePlanner() {
                 </div>
               ))}
             </div>
-
-            {/* ---------- Transport Mode ---------- */}
             <div style={{ marginBottom: 24 }}>
               <label style={{ fontSize: 16 }}>
                 Transport Mode:{" "}
@@ -232,34 +218,68 @@ export default function RoutePlanner() {
                 </select>
               </label>
             </div>
-
-            {/* ---------- ML Recommended POIs in Popup (dynamic) ---------- */}
             {filteredRecommended.length > 0 && (
               <div style={{ marginBottom: 20, textAlign: "left" }}>
                 <h3 style={{ color: "#1976d2", marginBottom: 8 }}>
                   You Might Also Like
                 </h3>
-                {filteredRecommended.map((poi) => (
-                  <div
-                    key={poi.id}
-                    style={{
-                      border: "1px solid #eee",
-                      borderRadius: 8,
-                      padding: 8,
-                      marginBottom: 6,
-                      background: "#f9f9f9",
-                    }}
-                  >
-                    <strong>{poi.name}</strong>
-                    <p style={{ fontSize: 13, margin: 0 }}>
-                      {poi.description}
-                    </p>
-                  </div>
-                ))}
+                  {filteredRecommended.map((poi) => (
+                    <div
+                      key={poi.id}
+                      style={{
+                        border: "1px solid #eee",
+                        borderRadius: 8,
+                        padding: 8,
+                        marginBottom: 6,
+                        background: "#f9f9f9",
+                        textAlign: "left",
+                      }}
+                    >
+                      <strong>{poi.name}</strong>
+                      <p style={{ fontSize: 13, margin: "4px 0" }}>{poi.description}</p>
+                      {poi.image && (
+                        <img
+                          src={`http://localhost:5000/images/${poi.image}`}
+                          alt={poi.name}
+                          style={{
+                            width: "100%",
+                            maxHeight: 120,
+                            objectFit: "cover",
+                            borderRadius: 6,
+                            marginBottom: 4,
+                          }}
+                        />
+                      )}
+                      <p style={{ fontSize: 12, margin: "2px 0" }}>
+                        Visitors: {poi.visitors || 0}
+                      </p>
+                      <p style={{ fontSize: 12, margin: "2px 0", fontWeight: "bold" }}>
+                        Category: {poi.category || "Uncategorized"}
+                      </p>
+                      <button
+                        onClick={() => {
+                          setShowPopup(false);
+                          navigate("/routedetails", {
+                            state: { startPoint: userLocation, filteredPois: [poi], transportMode: mode },
+                          });
+                        }}
+                        style={{
+                          marginTop: 6,
+                          padding: "6px 12px",
+                          fontSize: 13,
+                          background: "#1976d2",
+                          color: "#fff",
+                          border: "none",
+                          borderRadius: 6,
+                          cursor: "pointer",
+                        }}
+                      >
+                        View on Map
+                      </button>
+                    </div>
+                  ))}
               </div>
             )}
-
-            {/* ---------- Confirm / Cancel Buttons ---------- */}
             <div style={{ display: "flex", justifyContent: "space-between" }}>
               <button
                 onClick={planRoute}

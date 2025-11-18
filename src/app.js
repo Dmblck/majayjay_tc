@@ -11,7 +11,6 @@ import ProfilePage from "./pages/profile";
 import RouteDetails from "./pages/RouteDetails";
 import Navbar from "./components/NavBar";
 
-// Admin pages (make sure these are React components in .js files)
 import AdminDashboard from "./pages/admin/AdminDashboard";
 import AdminPOIs from "./pages/admin/AdminPOIs";
 import AdminUsers from "./pages/admin/AdminUsers";
@@ -67,7 +66,6 @@ export default function App() {
         <Route path="/profile" element={user ? <ProfilePage /> : <Navigate to="/login" replace />} />
         <Route path="/routedetails" element={user ? <RouteDetails /> : <Navigate to="/login" replace />} />
 
-        {/* Admin routes */}
         <Route path="/admin/dashboard" element={isAdmin ? <AdminDashboard /> : <Navigate to="/login" replace />} />
         <Route path="/admin/pois" element={isAdmin ? <AdminPOIs /> : <Navigate to="/login" replace />} />
         <Route path="/admin/users" element={isAdmin ? <AdminUsers /> : <Navigate to="/login" replace />} />

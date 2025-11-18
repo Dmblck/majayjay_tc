@@ -7,8 +7,6 @@ export default function LoginPage({ setUser }) {
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
-  const user = JSON.parse(localStorage.getItem("user"));
-  const token = user?.token; // instead of localStorage.getItem("token")
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -26,17 +24,21 @@ export default function LoginPage({ setUser }) {
       setLoading(false);
 
       if (data.success) {
-        localStorage.setItem(
-          "user",
-          JSON.stringify({
-            id: data.user.id,
-            username: data.user.username,
-            role: data.user.role,
-            token: data.token, // must come from backend
-          })
-        );
+        if (data.user.banned) {
+          setError(
+            "Your account has been banned. Please contact the administrator."
+          );
+          return;
+        }
 
-        // Update App.js state
+        // Save user and token together
+        const storedUser = {
+          token: data.token,
+          ...data.user,
+        };
+        localStorage.setItem("user", JSON.stringify(storedUser));
+
+        // Update state if needed
         if (setUser) setUser(data.user);
 
         // Redirect based on role
@@ -59,7 +61,7 @@ export default function LoginPage({ setUser }) {
     <div className="login-page">
       <div className="login-box">
         <h2>Login</h2>
-        {error && <p className="error">{error}</p>}
+        {error && <p className="error" style={{ color: "red" }}>{error}</p>}
         <form onSubmit={handleSubmit}>
           <div className="input-group">
             <label>Email or Username</label>
@@ -87,7 +89,12 @@ export default function LoginPage({ setUser }) {
         </form>
         <p className="signup-text">
           Don't have an account?{" "}
-          <span onClick={() => navigate("/signup")}>Sign Up</span>
+          <span
+            style={{ color: "#1d4ed8", cursor: "pointer" }}
+            onClick={() => navigate("/signup")}
+          >
+            Sign Up
+          </span>
         </p>
       </div>
     </div>

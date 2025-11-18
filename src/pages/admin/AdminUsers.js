@@ -1,15 +1,11 @@
 import React, { useState, useEffect } from "react";
-
 export default function AdminUsers() {
   const [users, setUsers] = useState([]);
   const [selectedUser, setSelectedUser] = useState(null);
   const [showModal, setShowModal] = useState(false);
   const [error, setError] = useState("");
-
   const user = JSON.parse(localStorage.getItem("user"));
   const token = user?.token;
-
-
   useEffect(() => {
     if (!token) {
       setError("No token found. Please login as admin.");
@@ -17,7 +13,6 @@ export default function AdminUsers() {
     }
     fetchUsers();
   }, [token]);
-
   const fetchUsers = async () => {
     try {
       const res = await fetch("http://localhost:5000/api/users", {
@@ -25,7 +20,6 @@ export default function AdminUsers() {
           Authorization: `Bearer ${token}`,
         },
       });
-
       if (res.status === 401) throw new Error("Unauthorized. Please login.");
       if (res.status === 403) throw new Error("Access denied. Admins only.");
       if (!res.ok) throw new Error("Failed to fetch users");
@@ -41,7 +35,6 @@ export default function AdminUsers() {
       setError(err.message);
     }
   };
-
   const toggleBan = async (userId, currentlyBanned) => {
     try {
       const res = await fetch(`http://localhost:5000/api/users/${userId}/ban`, {
@@ -59,12 +52,10 @@ export default function AdminUsers() {
       alert(err.message);
     }
   };
-
   const viewUser = (user) => {
     setSelectedUser(user);
     setShowModal(true);
   };
-
   return (
     <div
       style={{
@@ -87,9 +78,7 @@ export default function AdminUsers() {
       >
         All Users
       </h1>
-
       {error && <p style={{ color: "red", fontSize: "1.1rem" }}>{error}</p>}
-
       {users.length > 0 && (
         <div
           style={{
@@ -166,7 +155,6 @@ export default function AdminUsers() {
           </table>
         </div>
       )}
-
       {showModal && selectedUser && (
         <div style={modalOverlayStyle}>
           <div style={modalStyle}>
@@ -218,27 +206,23 @@ export default function AdminUsers() {
     </div>
   );
 }
-
 const tableStyle = {
   width: "100%",
   borderCollapse: "collapse",
   fontSize: "1.05rem",
 };
-
 const thStyle = {
   padding: "14px",
   textAlign: "center",
   fontWeight: 600,
   letterSpacing: "0.5px",
 };
-
 const tdStyle = {
   padding: "12px",
   borderBottom: "1px solid #e5e7eb",
   textAlign: "center",
   color: "#334155",
 };
-
 const actionBtnStyle = (bgColor) => ({
   padding: "8px 14px",
   margin: "0 5px",
@@ -253,7 +237,6 @@ const actionBtnStyle = (bgColor) => ({
   transform: "scale(1)",
   outline: "none",
 });
-
 const modalOverlayStyle = {
   position: "fixed",
   top: 0,
@@ -266,7 +249,6 @@ const modalOverlayStyle = {
   justifyContent: "center",
   zIndex: 1000,
 };
-
 const modalStyle = {
   background: "#fff",
   padding: "25px 30px",

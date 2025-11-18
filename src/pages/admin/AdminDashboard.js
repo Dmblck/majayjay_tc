@@ -2,45 +2,40 @@ import React, { useState, useEffect, useRef } from "react";
 import { MapContainer, TileLayer, Marker, Popup } from "react-leaflet";
 import "leaflet/dist/leaflet.css";
 import { useNavigate } from "react-router-dom";
+import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid } from "recharts";
 
 export default function AdminDashboard() {
   const [pois, setPois] = useState([]);
   const [usersCount, setUsersCount] = useState(0);
   const navigate = useNavigate();
-  const topPOIsRef = useRef(null); // reference for scrolling
+  const chartRef = useRef(null);
 
   useEffect(() => {
     const user = JSON.parse(localStorage.getItem("user"));
     const token = user?.token;
 
-
-    // Fetch POIs
-    fetch("http://localhost:5000/api/pois", {
-      headers: { Authorization: `Bearer ${token}` },
-    })
-      .then((res) => res.json())
-      .then((data) => setPois(Array.isArray(data) ? data : []))
-      .catch((err) => console.error(err));
-
-    // Fetch Users
+    // Fetch users count
     fetch("http://localhost:5000/api/users", {
       headers: { Authorization: `Bearer ${token}` },
     })
-      .then((res) => res.json())
-      .then((data) => setUsersCount(Array.isArray(data) ? data.length : 0))
-      .catch((err) => console.error(err));
+      .then(res => res.json())
+      .then(data => setUsersCount(Array.isArray(data) ? data.length : 0))
+      .catch(err => console.error(err));
+
+    // Fetch most liked POIs
+    fetch("http://localhost:5000/api/pois/most-liked", {
+      headers: { Authorization: `Bearer ${token}` },
+    })
+      .then(res => res.json())
+      .then(data => setPois(Array.isArray(data.mostLiked) ? data.mostLiked : []))
+      .catch(err => console.error(err));
   }, []);
 
-  // Sort POIs by visitors
-  const visitOrder = { "Very High": 4, High: 3, Moderate: 2, Low: 1 };
-  const topPOIs = [...pois]
-    .sort((a, b) => (visitOrder[b.visitors] || 0) - (visitOrder[a.visitors] || 0))
-    .slice(0, 5);
+  const topPOIs = pois.slice(0, 5);
 
-  // Smooth scroll to the Top 5 POIs section
-  const scrollToTopPOIs = () => {
-    if (topPOIsRef.current) {
-      topPOIsRef.current.scrollIntoView({ behavior: "smooth" });
+  const scrollToChart = () => {
+    if (chartRef.current) {
+      chartRef.current.scrollIntoView({ behavior: "smooth" });
     }
   };
 
@@ -67,7 +62,7 @@ export default function AdminDashboard() {
         Admin Dashboard
       </h1>
 
-      {/* Summary Cards */}
+      {/* Summary cards */}
       <div
         style={{
           display: "flex",
@@ -94,16 +89,52 @@ export default function AdminDashboard() {
 
         <div
           style={{ ...summaryCardStyle("#f59e0b"), cursor: "pointer" }}
-          onClick={scrollToTopPOIs}
+          onClick={scrollToChart}
         >
-          <h3 style={cardTitleStyle}>Top 5 POIs</h3>
+          <h3 style={cardTitleStyle}>Top 5 Liked POIs</h3>
           <p style={cardValueStyle}>{topPOIs.length}</p>
         </div>
       </div>
 
-      {/* Top POIs Section */}
+      {/* Top 5 Most Liked POIs - Bar Chart */}
       <div
-        ref={topPOIsRef}
+        ref={chartRef}
+        style={{
+          background: "#fff",
+          padding: "20px",
+          borderRadius: "12px",
+          boxShadow: "0 8px 20px rgba(0,0,0,0.08)",
+          marginBottom: "30px",
+        }}
+      >
+        <h2
+          style={{
+            color: "#1e3a8a",
+            fontSize: "1.5rem",
+            marginBottom: "20px",
+            fontWeight: "600",
+          }}
+        >
+          Top 5 Most Liked POIs
+        </h2>
+
+        {topPOIs.length > 0 ? (
+          <ResponsiveContainer width="100%" height={300}>
+            <BarChart data={topPOIs} margin={{ top: 20, right: 30, left: 0, bottom: 0 }}>
+              <CartesianGrid strokeDasharray="3 3" />
+              <XAxis dataKey="name" />
+              <YAxis allowDecimals={false} />
+              <Tooltip />
+              <Bar dataKey="total_likes" fill="#1d4ed8" barSize={40} />
+            </BarChart>
+          </ResponsiveContainer>
+        ) : (
+          <p style={{ color: "#6b7280" }}>No POI data available.</p>
+        )}
+      </div>
+
+      {/* Map */}
+      <div
         style={{
           background: "#fff",
           padding: "20px",
@@ -115,60 +146,13 @@ export default function AdminDashboard() {
           style={{
             color: "#1e3a8a",
             fontSize: "1.5rem",
-            marginBottom: "15px",
+            marginBottom: "20px",
             fontWeight: "600",
           }}
         >
-          Top 5 Most Visited POIs
+          POI Map
         </h2>
 
-        <div style={{ marginBottom: "15px" }}>
-          {topPOIs.length > 0 ? (
-            <ul style={{ listStyle: "none", padding: 0, margin: 0 }}>
-              {topPOIs.map((poi, i) => (
-                <li
-                  key={poi.id}
-                  style={{
-                    background: i % 2 === 0 ? "#f9fafb" : "#f3f4f6",
-                    padding: "10px 15px",
-                    borderRadius: "6px",
-                    marginBottom: "6px",
-                    fontSize: "1rem",
-                    display: "flex",
-                    justifyContent: "space-between",
-                    color: "#334155",
-                  }}
-                >
-                  <span style={{ fontWeight: 600 }}>
-                    #{i + 1} {poi.name}
-                  </span>
-                  <span
-                    style={{
-                      background:
-                        poi.visitors === "Very High"
-                          ? "#dc2626"
-                          : poi.visitors === "High"
-                          ? "#f97316"
-                          : poi.visitors === "Moderate"
-                          ? "#facc15"
-                          : "#16a34a",
-                      color: "#fff",
-                      padding: "2px 8px",
-                      borderRadius: "6px",
-                      fontSize: "0.9rem",
-                    }}
-                  >
-                    {poi.visitors}
-                  </span>
-                </li>
-              ))}
-            </ul>
-          ) : (
-            <p style={{ color: "#6b7280" }}>No POI data available.</p>
-          )}
-        </div>
-
-        {/* Map */}
         <MapContainer
           center={[14.1467, 121.4708]}
           zoom={13}
@@ -184,16 +168,14 @@ export default function AdminDashboard() {
             url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
             attribution='&copy; OpenStreetMap contributors'
           />
-          {topPOIs.map((poi) => (
+          {topPOIs.map(poi => (
             <Marker key={poi.id} position={[poi.lat, poi.lng]}>
               <Popup>
                 <strong>{poi.name}</strong>
                 <br />
                 {poi.description}
                 <br />
-                Visitors: {poi.visitors}
-                <br />
-                Tags: {poi.tags}
+                Likes: {poi.total_likes}
               </Popup>
             </Marker>
           ))}
@@ -203,7 +185,6 @@ export default function AdminDashboard() {
   );
 }
 
-// Style helpers
 const summaryCardStyle = (bgColor) => ({
   flex: "1",
   padding: "25px 20px",

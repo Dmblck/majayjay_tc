@@ -323,18 +323,18 @@ button {
 
 .home-grid {
   display: grid;
-  grid-template-columns: 1.5fr 1fr;
-  gap: 25px;
+  grid-template-columns: 1fr 1fr; /* two columns on desktop */
+  gap: 16px;
+  width: 100%; /* ensure full width */
 }
 
-/* Cards inside grid */
 .map-card, .top-spots-card {
   background: #fff;
-  border-radius: 16px;
-  padding: 16px;
-  box-shadow: 0 10px 25px rgba(0,0,0,0.15);
-  overflow-y: auto;
-  height: 600px;
+  padding: 10px;
+  border-radius: 8px;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+  overflow: hidden; /* prevent dragging */
+  height: 500px; /* reduce height to fit screen */
 }
 
 .no-spots {
@@ -464,4 +464,55 @@ button {
   }
   .map-section { height: 400px; }
   .sidebar-section { max-height: none; margin-top: 20px; }
+}
+.home-page {
+  padding: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.home-top-card {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.home-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+
+.map-card, .top-spots-card {
+  background: #fff;
+  padding: 10px;
+  border-radius: 8px;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+}
+
+/* Legend styling already fixed, but ensure width adjusts */
+.map-card .leaflet-control {
+  max-width: 100%;
+}
+
+/* MOBILE RESPONSIVE */
+@media (max-width: 768px) {
+  .home-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .map-card {
+    height: 300px; /* shorter for mobile */
+  }
+  .top-spots-card {
+    height: auto;
+  }
+  .top-spots-card ul li {
+    font-size: 0.9rem;
+  }
+
+  .weather-advisory {
+    font-size: 0.9rem;
+  }
 }

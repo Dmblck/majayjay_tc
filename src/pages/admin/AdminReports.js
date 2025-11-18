@@ -1,5 +1,4 @@
 import React, { useState, useEffect, useRef } from "react";
-
 export default function AdminReports() {
   const [activeReport, setActiveReport] = useState("users");
   const [reportData, setReportData] = useState([]);
@@ -8,11 +7,9 @@ export default function AdminReports() {
   const [filterColumn, setFilterColumn] = useState("");
   const [sortAsc, setSortAsc] = useState(true);
   const reportRef = useRef();
-
   useEffect(() => {
     fetchReport(activeReport);
   }, [activeReport]);
-
   const fetchReport = async (type) => {
     setLoading(true);
     setError(null);
@@ -33,7 +30,6 @@ export default function AdminReports() {
       setLoading(false);
     }
   };
-
   const handlePrint = () => {
     if (!reportRef.current) return;
     const printContent = reportRef.current.innerHTML;
@@ -44,7 +40,6 @@ export default function AdminReports() {
     WinPrint.print();
     WinPrint.close();
   };
-
   const sortData = (array) => {
     if (!filterColumn) return array;
     return [...array].sort((a, b) => {
@@ -62,7 +57,6 @@ export default function AdminReports() {
       return 0;
     });
   };
-
   const renderReport = () => {
     if (loading) return <p style={{ fontSize: "18px" }}>Loading...</p>;
     if (error) return <p style={{ color: "red", fontSize: "18px" }}>{error}</p>;
@@ -72,7 +66,6 @@ export default function AdminReports() {
     const data = sortData(
       activeReport === "users" ? reportData.users || [] : reportData.pois || []
     );
-
     const tableStyle = {
       width: "100%",
       borderCollapse: "collapse",
@@ -80,19 +73,16 @@ export default function AdminReports() {
       fontSize: "18px",
       backgroundColor: "#f9f9f9",
     };
-
     const thStyle = {
       backgroundColor: "#3b82f6",
       color: "white",
       padding: "12px 10px",
       textAlign: "left",
     };
-
     const tdStyle = {
       border: "1px solid #ccc",
       padding: "10px",
     };
-
     if (activeReport === "users") {
       return (
         <div>
@@ -131,7 +121,6 @@ export default function AdminReports() {
               {sortAsc ? "Ascending" : "Descending"}
             </button>
           </div>
-
           <table style={tableStyle}>
             <thead>
               <tr>
@@ -155,7 +144,6 @@ export default function AdminReports() {
         </div>
       );
     }
-
     if (activeReport === "pois") {
       return (
         <div>
@@ -195,7 +183,6 @@ export default function AdminReports() {
               {sortAsc ? "Ascending" : "Descending"}
             </button>
           </div>
-
           <table style={tableStyle}>
             <thead>
               <tr>
@@ -217,10 +204,8 @@ export default function AdminReports() {
         </div>
       );
     }
-
     return <p>No report available.</p>;
   };
-
   return (
     <div style={{ marginLeft: 220, padding: 30 }}>
       <h2 style={{ fontSize: "28px", marginBottom: 20 }}>Admin Reports</h2>
@@ -256,11 +241,9 @@ export default function AdminReports() {
           POI Reports
         </button>
       </div>
-
       <div ref={reportRef} style={{ marginBottom: 20 }}>
         {renderReport()}
       </div>
-
       <button
         onClick={handlePrint}
         style={{

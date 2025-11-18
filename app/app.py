@@ -29,7 +29,6 @@ DB_CONFIG = {
 MODEL_PATH = "ml_model.pkl"
 VECTORIZER_PATH = "vectorizer.pkl"
 
-# -------------------- Hybrid Recommender --------------------
 class PoiRecommenderHybrid:
     def __init__(self, user_id, db_config=DB_CONFIG, model_path=MODEL_PATH, vectorizer_path=VECTORIZER_PATH):
         self.user_id = user_id
@@ -58,7 +57,6 @@ class PoiRecommenderHybrid:
         return None, None
 
     def train_model(self):
-        # Load feedback data
         conn = mysql.connector.connect(**self.db_config)
         df = pd.read_sql("""
             SELECT f.user_id, p.id AS poi_id, p.tags, p.name, p.description, f.liked
@@ -70,28 +68,23 @@ class PoiRecommenderHybrid:
         if df.empty:
             return {"success": False, "error": "No feedback data available."}
 
-        # Prepare text
         df['text'] = (df['tags'].fillna('') + " " +
                       df['name'].fillna('') + " " +
                       df['description'].fillna('')).str.lower()
         X_text = df['text']
         y = df['liked'].values
 
-        # Vectorize text
         vectorizer = TfidfVectorizer()
         X = vectorizer.fit_transform(X_text)
 
-        # Train classifier
         clf = SGDClassifier(loss='log_loss')
         clf.fit(X, y)
 
-        # Evaluate on the same data
         y_pred = clf.predict(X)
         precision = precision_score(y, y_pred, zero_division=0)
         recall = recall_score(y, y_pred, zero_division=0)
         f1 = f1_score(y, y_pred, zero_division=0)
 
-        # Save model & vectorizer
         with open(MODEL_PATH, "wb") as f:
             pickle.dump(clf, f)
         with open(VECTORIZER_PATH, "wb") as f:
@@ -123,7 +116,6 @@ class PoiRecommenderHybrid:
         feedback = cursor.fetchall()
         rated_ids = [row[0] for row in feedback]
 
-        # NEW USER: recommend most popular
         if len(feedback) == 0:
             cursor.execute("""
                 SELECT poi_id, COUNT(*) as like_count
@@ -145,7 +137,6 @@ class PoiRecommenderHybrid:
             conn.close()
             return df_popular.head(top_n).to_dict(orient='records')
 
-        # EXISTING USER
         df_unrated = self.df_pois[~self.df_pois['id'].isin(rated_ids)].copy()
 
         liked_tags = []
@@ -176,7 +167,6 @@ class PoiRecommenderHybrid:
 
         return df_unrated.sort_values('score', ascending=False).head(top_n).to_dict(orient='records')
 
-    # -------------------- Top-K Evaluation --------------------
     def evaluate_top_k(self, k=10):
         conn = mysql.connector.connect(**self.db_config)
         df_feedback = pd.read_sql("SELECT user_id, poi_id, liked FROM user_feedback", conn)
@@ -215,7 +205,6 @@ class PoiRecommenderHybrid:
 
         return {"precision_at_k": precision_at_k, "recall_at_k": recall_at_k}
 
-# -------------------- Flask Endpoints --------------------
 @app.route("/api/train_model", methods=["POST"])
 def train_model_endpoint():
     recommender = PoiRecommenderHybrid(user_id=None)

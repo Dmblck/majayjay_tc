@@ -46,7 +46,6 @@ export default function Navbar({ user, setUser }) {
         <Link to="/admin/dashboard" style={{ color: "#fff", textDecoration: "none", marginBottom: "16px" }}>Dashboard</Link>
         <Link to="/admin/pois" style={{ color: "#fff", textDecoration: "none", marginBottom: "16px" }}>Manage POIs</Link>
         <Link to="/admin/users" style={{ color: "#fff", textDecoration: "none", marginBottom: "16px" }}>Manage Users</Link>
-        <Link to="/admin/ml" style={{ color: "#fff", textDecoration: "none", marginBottom: "16px" }}>ML Module</Link>
         <Link to="/admin/reports" style={{ color: "#fff", textDecoration: "none", marginBottom: "16px" }}>Reports</Link>
         <button
           onClick={handleLogout}
